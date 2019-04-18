@@ -1,0 +1,112 @@
+
+
+All queries-
+
+1 degree(the page showing search results for all films with the given actor and Kevin Bacon):
+
+SELECT id, name, year from movies WHERE id IN (
+			SELECT movie_id FROM roles WHERE (roles.actor_id = '".$actor1['id']."' OR roles.actor_id = '".$actor2['id']."')
+			GROUP BY movie_id
+			HAVING COUNT(roles.movie_id) > 1)
+			ORDER BY year DESC, name ASC
+
+Input: Josh Brolin
+
+Output: 1	Hollow Man	2000
+-------------------------------------------------------------------------------------------------------------------------------
+2degree(the page showing search results for two degrees of separation with the given actor and Kevin Bacon):
+
+SELECT T1.actor_id, T2.f_name, T2.l_name
+FROM
+(SELECT DISTINCT r_actor12.actor_id, a_actor12.first_name, a_actor12.last_name, r_actor12.movie_id FROM roles r_actor12, actors a_actor12
+WHERE
+              r_actor12.movie_id IN (SELECT DISTINCT r_actor1.movie_id FROM roles r_actor1 WHERE r_actor1.actor_id = '".$actor1['id']."')
+AND
+    r_actor12.actor_id <> '".$actor1['id']."'
+AND
+             a_actor12.id = r_actor12.actor_id)
+AS T1
+INNER JOIN
+(SELECT DISTINCT r_actor23.actor_id, a_actor23.first_name AS f_name, a_actor23.last_name AS l_name, r_actor23.movie_id FROM roles r_actor23, actors a_actor23
+WHERE   
+    r_actor23.movie_id IN (SELECT DISTINCT r_actor3.movie_id FROM roles r_actor3 WHERE r_actor3.actor_id = '".$actor2['id']."')  
+              AND
+    r_actor23.actor_id <> '".$actor2['id']."'
+AND
+a_actor23.id = r_actor23.actor_id)
+AS T2
+ON (T1.actor_id = T2.actor_id)
+
+Input: richmond arquette
+
+Output: 1	David (I)	Andrews
+	2	Christopher John	Fields
+
+--------------------------------------------------------------------------------------------------------------------------------------
+1genre(the page showing genre(s) with max. number of movies):
+
+SELECT genre, COUNT(genre) movie_count FROM movies_genres GROUP BY genre HAVING movie_count = (
+    SELECT COUNT(genre) c FROM movies_genres GROUP BY genre ORDER BY c DESC LIMIT 1
+    )
+
+
+Output: 1	Drama		17
+	2	Thriller	17
+-----------------------------------------------------------------------------------------------------------------------------------
+2genre(the page showing actors with max. number of movies of a user-given genre):
+SELECT a1.first_name, a1.last_name, a1.film_count, r1.actor_id, COUNT(r1.actor_id) count_genre
+FROM actors a1, roles r1, movies_genres mg1
+WHERE a1.id = r1.actor_id AND r1.movie_id = mg1.movie_id AND mg1.genre = '$inputgenre'
+GROUP BY r1.actor_id
+HAVING count_genre =
+(SELECT COUNT(r2.actor_id) c2
+FROM roles r2, movies_genres mg2
+WHERE r2.movie_id = mg2.movie_id AND mg2.genre = '$inputgenre'
+GROUP BY r2.actor_id
+ORDER BY c2 DESC LIMIT 1)
+
+Input: Action
+
+
+Output: 1	Michael (I)	Madsen
+	2	Stevo	Polyi
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+director sql query (the page showing actors who also directed a movie):
+
+SELECT actors.first_name, actors.last_name
+FROM actors
+INNER JOIN directors ON actors.first_name = directors.first_name AND actors.last_name = directors.last_name
+
+Output:
+1	Andrew	Adamson
+2	Zach	Braff
+3	James (I)	Cameron
+4	Sofia	Coppola
+5	Mel (I)	Gibson
+6	Mike (I)	Judge
+7	Jay	Levey
+8	Guy	Ritchie
+9	Steven	Soderbergh
+10	Quentin	Tarantino
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+Conflictiong names (sql query to check for the best match for the actor's name that was typed by the user.  This query finds and returns the 
+ID of the actor whose last name exactly matches what the user typed, and whose first name starts with the text typed by the user. If more 
+than one such actor exists, you use the actor who has appeared in the most movies, breaking ties by choosing the actor with the lower-numbered ID:
+
+Query part 1: Select * from actors where last_name = 'Bacon' AND first_name LIKE 'Kevin%' Order By film_count DESC, id ASC Limit 1;
+
+Query part 2: Select * from actors where last_name = '$lastname' AND first_name LIKE '$firstname%' Order By film_count DESC, id ASC Limit 1;
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+Connection query:
+
+$servername = "localhost";
+$username = "root";
+$password = "";
+$database = "project_1"; // name of database.
+
+$conn = new mysqli($servername, $username, $password, $database);
+
+

@@ -1,0 +1,35 @@
+
+
+body{
+	text-align:center;
+	font-family:sans-serif;
+}
+
+
+div
+{
+	padding:1em;
+	background: #DAD9D4;
+	width:90%;
+	margin: auto;
+	text-align: center;
+}
+
+
+
+table , th , td
+{
+	margin-left:auto;
+	margin-right:auto;
+	text-align: center;
+	border-collapse: collapse;
+}
+
+table.result{
+	min-width:30%;
+}
+
+tr.result:nth-child(even)
+{
+	background-color: #FFFFFF;
+}
